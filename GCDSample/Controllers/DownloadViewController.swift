@@ -42,11 +42,23 @@ class DownloadViewController: UIViewController {
 
         switch segueIdentifier {
         case .secuencialCazurro:
-            serialDownload(url: RemoteImages.url(.danny)!)
+            smartConcurrent(url: RemoteImages.url(.danny)!, completion: { (image) in
+                self.imageView.image = image
+                self.activiyView.isHidden = true
+                self.activiyView.stopAnimating()
+            })
         case .concurrenteBurro:
-            concurrentKludge(url: RemoteImages.url(.missandei)!)
+            smartConcurrent(url: RemoteImages.url(.missandei)!, completion: { (image) in
+                self.imageView.image = image
+                self.activiyView.isHidden = true
+                self.activiyView.stopAnimating()
+            })
         case .concurrenteCorrecto:
-            correctConcurrent(url: RemoteImages.url(.olenna)!)
+            smartConcurrent(url: RemoteImages.url(.olenna)!, completion: { (image) in
+                self.imageView.image = image
+                self.activiyView.isHidden = true
+                self.activiyView.stopAnimating()
+            })
         case .concurrenteEspabilao:
             smartConcurrent(url: RemoteImages.url(.cersei)!, completion: { (image) in
                 self.imageView.image = image
@@ -55,86 +67,9 @@ class DownloadViewController: UIViewController {
             })
         }
 
-//        switch RemoteImages.imageCase(forSegueId: segueId) {
-//        case .danny:
-//            serialDownload(url: RemoteImages.url(.danny)!)
-//        case .missandei:
-//            concurrentKludge(url: RemoteImages.url(.missandei)!)
-//        case .olenna:
-//            correctConcurrent(url: RemoteImages.url(.olenna)!)
-//        case .cersei:
-//            smartConcurrent(url: RemoteImages.url(.cersei)!, completion: { (image) in
-//                self.imageView.image = image
-//                self.activiyView.isHidden = true
-//                self.activiyView.stopAnimating()
-//            })
-//
-//        default:
-//            print("Use AsyncImage")
-//        }
     }
     
     // MARK: - Estrategias
-    func serialDownload(url: URL) {
-        // Gestion UI
-        activiyView.isHidden = false
-        activiyView.startAnimating()
-        
-        // Este codigo se ejecutará al salir de la función
-        defer {
-            activiyView.isHidden = true
-            activiyView.stopAnimating()
-        }
-        
-        if let imgData = try? Data(contentsOf: url),
-            let image = UIImage(data: imgData) {
-            
-            imageView.image = image
-        }
-    }
-    
-    func concurrentKludge(url: URL) {
-        // Gestion UI
-        activiyView.isHidden = false
-        activiyView.startAnimating()
-        
-        // Este codigo se ejecutará al salir de la función
-        defer {
-            activiyView.isHidden = true
-            activiyView.stopAnimating()
-        }
-        
-        DispatchQueue(label: "io.keepcoding.concurrent").async {
-            if let imgData = try? Data(contentsOf: url),
-                let image = UIImage(data: imgData) {
-                
-                self.imageView.image = image
-            }
-        }
-        
-        
-    }
-    
-    func correctConcurrent(url: URL) {
-        // Gestion UI
-        activiyView.isHidden = false
-        activiyView.startAnimating()
-        
-        
-        DispatchQueue(label: "io.keepcoding.concurrent").async {
-            if let imgData = try? Data(contentsOf: url),
-                let image = UIImage(data: imgData) {
-                
-                DispatchQueue.main.async {
-                    self.imageView.image = image
-                    self.activiyView.isHidden = true
-                    self.activiyView.stopAnimating()
-                }
-            }
-        }
-    }
-    
-    
     typealias UIImageTask = (UIImage)->() // Closure que recibe una UIImage y no devuelve nada
     func smartConcurrent(url: URL, completion:@escaping UIImageTask) {
         
