@@ -52,11 +52,11 @@ class DownloadViewController: UIViewController {
         
         switch RemoteImages.imageCase(forSegueId: segueId) {
         case .danny:
-            serialDownload()
+            serialDownload(url: RemoteImages.url(.danny)!)
         case .missandei:
-            concurrentKludge()
+            concurrentKludge(url: RemoteImages.url(.missandei)!)
         case .olenna:
-            correctConcurrent()
+            correctConcurrent(url: RemoteImages.url(.olenna)!)
         case .cersei:
             smartConcurrent(url: RemoteImages.url(.cersei)!, completion: { (image) in
                 self.imageView.image = image
@@ -81,8 +81,7 @@ class DownloadViewController: UIViewController {
             activiyView.stopAnimating()
         }
         
-        if let url = RemoteImages.url(.danny),
-            let imgData = try? Data(contentsOf: url),
+        if let imgData = try? Data(contentsOf: url),
             let image = UIImage(data: imgData) {
             
             imageView.image = image
@@ -101,8 +100,7 @@ class DownloadViewController: UIViewController {
         }
         
         DispatchQueue(label: "io.keepcoding.concurrent").async {
-            if let url = RemoteImages.url(.missandei),
-                let imgData = try? Data(contentsOf: url),
+            if let imgData = try? Data(contentsOf: url),
                 let image = UIImage(data: imgData) {
                 
                 self.imageView.image = image
@@ -119,8 +117,7 @@ class DownloadViewController: UIViewController {
         
         
         DispatchQueue(label: "io.keepcoding.concurrent").async {
-            if let url = RemoteImages.url(.olenna),
-                let imgData = try? Data(contentsOf: url),
+            if let imgData = try? Data(contentsOf: url),
                 let image = UIImage(data: imgData) {
                 
                 DispatchQueue.main.async {
