@@ -8,6 +8,14 @@
 
 import UIKit
 
+// Enum de identificadores segue
+enum SegueIdentifier: String {
+    case secuencialCazurro = "secuencialCazurro"
+    case concurrenteBurro = "concurrenteBurro"
+    case concurrenteCorrecto = "concurrenteCorrecto"
+    case concurrenteEspabilao = "concurrenteEspabilao"
+}
+
 // Tenemos que mapear segueID -> RemoteImage -> Método
 extension RemoteImages{
     
@@ -15,17 +23,17 @@ extension RemoteImages{
         
         let result : RemoteImages
         
-        switch segueId {
-        case "secuencialCazurro":
+        guard  let segueIdentifier = SegueIdentifier(rawValue: segueId) else {return .wrongURLString}
+        
+        switch segueIdentifier {
+        case .secuencialCazurro:
             result = .danny
-        case "concurrenteBurro":
+        case .concurrenteBurro:
             result = .missandei
-        case "concurrenteCorrecto":
+        case .concurrenteCorrecto:
             result = .olenna
-        case "concurrenteEspabilao":
+        case .concurrenteEspabilao:
             result = .cersei
-        default:
-            result = .wrongURLString
         }
         return result
     }
