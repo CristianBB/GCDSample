@@ -16,6 +16,32 @@ enum SegueIdentifier: String {
     case concurrenteEspabilao = "concurrenteEspabilao"
 }
 
+// Struct para la descarga de imagenes en cola secundaria con closures de ejecución inicial y final
+struct ConcurrentImageDownload {
+    typealias initTask = () -> () // Closure para ejecución de tareas iniciales, no recibe parametros ni devuelve nada
+    typealias UIImageTask = (UIImage)->() // Closure que recibe una UIImage y no devuelve nada
+    
+    static func download(url: URL, initTask: @escaping initTask, completion:@escaping UIImageTask) {
+        // La closure initTask se ejecuta en cola principal
+        DispatchQueue.main.async {
+            initTask()
+            
+            // Me voy a segundo plano y aprovecho una de las colas del sistema
+            DispatchQueue.global(qos:.default).async {
+                if let data = try? Data(contentsOf: url),
+                    let image = UIImage(data: data) {
+                    
+                    // No sé qué hará con la imagen la closure de finalización, por si acaso lo hago en primer plano
+                    DispatchQueue.main.async {
+                        completion(image)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 class DownloadViewController: UIViewController {
 
     @IBOutlet weak var imageView: UIImageView!
@@ -40,58 +66,27 @@ class DownloadViewController: UIViewController {
             return
         }
 
+        var imageUrl: URL
         switch segueIdentifier {
         case .secuencialCazurro:
-            smartConcurrent(url: RemoteImages.url(.danny)!, completion: { (image) in
-                self.imageView.image = image
-                self.activiyView.isHidden = true
-                self.activiyView.stopAnimating()
-            })
+            imageUrl = RemoteImages.url(.danny)!
         case .concurrenteBurro:
-            smartConcurrent(url: RemoteImages.url(.missandei)!, completion: { (image) in
-                self.imageView.image = image
-                self.activiyView.isHidden = true
-                self.activiyView.stopAnimating()
-            })
+            imageUrl = RemoteImages.url(.missandei)!
         case .concurrenteCorrecto:
-            smartConcurrent(url: RemoteImages.url(.olenna)!, completion: { (image) in
-                self.imageView.image = image
-                self.activiyView.isHidden = true
-                self.activiyView.stopAnimating()
-            })
+            imageUrl = RemoteImages.url(.olenna)!
         case .concurrenteEspabilao:
-            smartConcurrent(url: RemoteImages.url(.cersei)!, completion: { (image) in
-                self.imageView.image = image
-                self.activiyView.isHidden = true
-                self.activiyView.stopAnimating()
-            })
+            imageUrl = RemoteImages.url(.cersei)!
         }
-
-    }
-    
-    // MARK: - Estrategias
-    typealias UIImageTask = (UIImage)->() // Closure que recibe una UIImage y no devuelve nada
-    func smartConcurrent(url: URL, completion:@escaping UIImageTask) {
         
-        // No sé desde que cola  me llaman, pero sé que la preparación de la UI tiene que ser en primer plano
-        DispatchQueue.main.async {
+        ConcurrentImageDownload.download(url: imageUrl, initTask: {
             self.activiyView.isHidden = false
             self.activiyView.startAnimating()
-        
-            // Me voy a segundo plano y aprovecho una de las colas del sistema
-            DispatchQueue.global(qos:.default).async {
-                if let data = try? Data(contentsOf: url),
-                    let image = UIImage(data: data) {
-                    
-                    // No sé qué hará con la imagen la clausura de finalización, por si acaso lo hago en primer plano
-                    DispatchQueue.main.async {
-                        completion(image)
-                    }
-                }
-            }
+        }) { (image) in
+            self.imageView.image = image
+            self.activiyView.isHidden = true
+            self.activiyView.stopAnimating()
         }
-        
-        
+
     }
     
 }
