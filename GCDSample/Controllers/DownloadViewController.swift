@@ -16,29 +16,6 @@ enum SegueIdentifier: String {
     case concurrenteEspabilao = "concurrenteEspabilao"
 }
 
-// Tenemos que mapear segueID -> RemoteImage -> Método
-extension RemoteImages{
-    
-    static func imageCase(forSegueId segueId: String)-> RemoteImages{
-        
-        let result : RemoteImages
-        
-        guard  let segueIdentifier = SegueIdentifier(rawValue: segueId) else {return .wrongURLString}
-        
-        switch segueIdentifier {
-        case .secuencialCazurro:
-            result = .danny
-        case .concurrenteBurro:
-            result = .missandei
-        case .concurrenteCorrecto:
-            result = .olenna
-        case .concurrenteEspabilao:
-            result = .cersei
-        }
-        return result
-    }
-}
-
 class DownloadViewController: UIViewController {
 
     @IBOutlet weak var imageView: UIImageView!
@@ -58,23 +35,43 @@ class DownloadViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        switch RemoteImages.imageCase(forSegueId: segueId) {
-        case .danny:
+        guard  let segueIdentifier = SegueIdentifier(rawValue: segueId) else {
+            print("Use AsyncImage")
+            return
+        }
+
+        switch segueIdentifier {
+        case .secuencialCazurro:
             serialDownload(url: RemoteImages.url(.danny)!)
-        case .missandei:
+        case .concurrenteBurro:
             concurrentKludge(url: RemoteImages.url(.missandei)!)
-        case .olenna:
+        case .concurrenteCorrecto:
             correctConcurrent(url: RemoteImages.url(.olenna)!)
-        case .cersei:
+        case .concurrenteEspabilao:
             smartConcurrent(url: RemoteImages.url(.cersei)!, completion: { (image) in
                 self.imageView.image = image
                 self.activiyView.isHidden = true
                 self.activiyView.stopAnimating()
             })
-            
-        default:
-            print("Use AsyncImage")
         }
+
+//        switch RemoteImages.imageCase(forSegueId: segueId) {
+//        case .danny:
+//            serialDownload(url: RemoteImages.url(.danny)!)
+//        case .missandei:
+//            concurrentKludge(url: RemoteImages.url(.missandei)!)
+//        case .olenna:
+//            correctConcurrent(url: RemoteImages.url(.olenna)!)
+//        case .cersei:
+//            smartConcurrent(url: RemoteImages.url(.cersei)!, completion: { (image) in
+//                self.imageView.image = image
+//                self.activiyView.isHidden = true
+//                self.activiyView.stopAnimating()
+//            })
+//
+//        default:
+//            print("Use AsyncImage")
+//        }
     }
     
     // MARK: - Estrategias
